@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Apr  3 16:09:28 2023
-
-@author: student
-"""
+#%%
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -13,7 +9,7 @@ from scipy.stats import linregress
 
 #%% 
 Heater_Current = 0.26 #A 
-fh1 = pd.read_csv('FH1_260.csv',sep='\t',header=5) # read the data. 
+fh1 = pd.read_csv('data/FH1_260.csv',sep='\t',header=5) # read the data. 
 Va1 = np.array(fh1['Va(V)_1']) # accelerating voltage array 
 I1 = np.array(fh1['Ia(E-12 A)_1']) # Current array 
 T1 = np.array(fh1['T(c)_1']) #temperature array 
@@ -53,7 +49,7 @@ delta = reg.slope*(-1)+reg.intercept #phi_a-phi_k
 
 #%%
 Heater_Current = 0.23 #A 
-fh1 = pd.read_csv('FH1_230.csv',sep='\t',header=5) # read the data. 
+fh1 = pd.read_csv('data/FH1_230.csv',sep='\t',header=5) # read the data. 
 Va1 = np.array(fh1['Va(V)_1']) # accelerating voltage array 
 I1 = np.array(fh1['Ia(E-12 A)_1']) # Current array 
 T1 = np.array(fh1['T(c)_1']) #temperature array 
@@ -93,7 +89,7 @@ delta = reg.slope*(-1)+reg.intercept #phi_a-phi_k
 
 #%%
 Heater_Current = 0.24 #A 
-fh1 = pd.read_csv('FH1_240ma_6200mv.csv',sep='\t',header=5) # read the data. 
+fh1 = pd.read_csv('data/FH1_240ma_6200mv.csv',sep='\t',header=5) # read the data. 
 Va1 = np.array(fh1['Va(V)_1']) # accelerating voltage array 
 I1 = np.array(fh1['Ia(E-12 A)_1']) # Current array 
 T1 = np.array(fh1['T(c)_1']) #temperature array 
@@ -133,7 +129,7 @@ delta = reg.slope*(-1)+reg.intercept #phi_a-phi_k
 
 #%%
 Heater_Current = 0.25 #A 
-fh1 = pd.read_csv('FH1_240.csv',sep='\t',header=5) # read the data. 
+fh1 = pd.read_csv('data/FH1_250ma_6600mv.csv',sep='\t',header=5) # read the data. 
 Va1 = np.array(fh1['Va(V)_1']) # accelerating voltage array 
 I1 = np.array(fh1['Ia(E-12 A)_1']) # Current array 
 T1 = np.array(fh1['T(c)_1']) #temperature array 

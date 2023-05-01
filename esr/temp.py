@@ -229,4 +229,11 @@ plt.plot(avg_x, df, '.')
 
 f = cumtrapz(df, avg_x, initial=0)
 plt.figure()
-plt.plot(avg_x, f, '.')
+plt.plot(avg_x, -1*f, '.')
+
+#%%
+
+V = 426.6e-3 # V
+I = 0.5233 # A
+
+R = V/I

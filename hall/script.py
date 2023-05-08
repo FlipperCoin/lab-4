@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import linregress
+from scipy.constants import elementary_charge as e
 
 L = 16e-3
 W = 10e-3
@@ -33,8 +34,12 @@ Ip = np.array([])
 reg = linregress(Ip, UH)
 RH = reg.slope*d/B
 
+n = 1/(RH*e)
+
 plt.errorbar(Ip, UH, 0, 0, '.', label='data')
 plt.plot(smooth_I, reg.slope*smooth_I+reg.intercept, '--', label='fit')
 plt.grid()
 plt.legend()
 plt.show()
+
+#%%

@@ -9,8 +9,8 @@ d= 1e-3
 
 #%%
 
-Up = np.array([])
-Ip = np.array([])
+Up = np.array([-1.668, -1.420, -1.127, -0.901, -0.628, -0.393, -0.133, 0.217, 0.433, 0.739,  1.019, 1.233, 1.495])
+Ip = np.array([-30,    -25,    -20,    -15,    -10,    -5,     0,      5,     10,    15,     20,    25,    30])
 
 reg = linregress(Ip, Up)
 R0 = reg.slope
@@ -29,7 +29,7 @@ rhoxx = R0 / (L / (W*d))
 B = 250e-3
 
 UH = np.array([])
-Ip = np.array([])
+Ip = np.array([ ])
 
 reg = linregress(Ip, UH)
 RH = reg.slope*d/B

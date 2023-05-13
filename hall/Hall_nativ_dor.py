@@ -182,8 +182,9 @@ Up = uarray(Up,Up_err)
 R = Up/Ip
 
 x = B**2
-y = R - R0
-fig,fit = one4all(xdata=uval(x),ydata=uval(y),xerr=uerr(x),yerr=uerr(y),xlabel=r"$B^{2}\, \left[T^{2}\right]$",ylabel=r"$\left(R - R_{0}\right)\,[\Omega]$",mode="linear",show=True)
+y = R
+fig,fit = one4all(xdata=uval(x),ydata=uval(y),xerr=uerr(x),yerr=uerr(y),xlabel=r"$B^{2}\, \left[T^{2}\right]$",ylabel=r"$R\,[\Omega]$",mode="linear",show=True)
+print(f"R^2 : {fit.rvalue**2}")
 # axes = fig.axes
 # axes[0].set_ylim(30, 60)
 # fig.show()
@@ -194,6 +195,7 @@ def f(x, a, b):
 
 fig,fit = one4all(xdata=uval(B),ydata=uval(R),xerr=uerr(B),yerr=uerr(R),xlabel=r"$B\, \left[T\right]$",ylabel=r"$R\,[\Omega]$",mode="general function",f=f, show=True)
 R0_2 = ufloat(fit[0][0], np.sqrt(fit[1][0][0]))
+B2_co = ufloat(fit[0][1], np.sqrt(fit[1][1][1]))
 
 mu_e_ref = ufloat(0.39, 0.01)
 ni = 2.4*10**13 / (0.1)**3
@@ -291,3 +293,14 @@ plt.legend()
 plt.show()
 
 Eg2 = ufloat(fit.slope, fit.stderr)*(2*Kb) / eV, 
+
+#%%
+
+E0 = 0.8893
+alpha = 6.842e-4
+beta=398
+T=np.arange(120,141,1) + 273.15
+# T=200
+Eg_theo = E0 - alpha*T**2/(T+beta)
+Eg_theo
+# %%

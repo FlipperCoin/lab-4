@@ -15,14 +15,17 @@ V 4,952.20 4,944.64 5,427.29
 Q2
 42 Mo 17,479.34 17,374.3 19,608.3 2,293.16 2,289.85 2,394.81 2,518.3 2,623.5
 lmbda_tag - lmbda = h/(m_e*c) * (1-np.cos(theta))
-=> lmbda_max = lmbda + h/(m_e*c)
-=> e_max = h/lmbda_max = h/(lmbda + h/(m_e*c))
+=> lmbda_max = lmbda + 2*h/(m_e*c)
+=> e_max = h*c/lmbda_max = h*c/(lmbda + 2*h/(m_e*c))
 
 Q3
 lmbda_e = h/(m_e*c)
 
 Q4
-???
+PMMA (Plexiglass) - C5O2H8
+Oxygen 532 eV
+Carbon 283.8 eV
+Hydrogen 13.6 eV 
 
 Q5
 approx 574.5 ev, from ~17420 to ~16850
@@ -41,7 +44,7 @@ r_e = physical_constants['classical electron radius'][0]
 # Q2
 e_theo = np.array([17479.34, 17374.3, 19608.3])
 lmbda_theo = h*c/(e_theo*eV)
-lmbda_max = lmbda_theo + h/(m_e*c)
+lmbda_max = lmbda_theo + 2*h/(m_e*c)
 e_min = h*c/lmbda_max/eV
 max_delta_e =e_theo-e_min
 
@@ -49,8 +52,8 @@ max_delta_e =e_theo-e_min
 lmbda_e = h/(m_e*c)
 
 # Q6
-lmbda = 1e-12 # TODO
-theta = np.linspace(0, np.pi/2, 50)
+lmbda = 7.1e-11 # TODO
+theta = np.linspace(0, np.pi, 50)
 lmbda_tag = lmbda + h/(m_e*c) * (1-np.cos(theta))
 diff_cross_sect = (1/2) * r_e**2 * (lmbda/lmbda_tag)**2 * ((lmbda/lmbda_tag) + (lmbda_tag/lmbda) - np.sin(theta)**2)
 plt.figure(dpi=120)

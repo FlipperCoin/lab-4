@@ -28,7 +28,7 @@ Carbon 283.8 eV
 Hydrogen 13.6 eV 
 
 Q5
-approx 574.5 ev, from ~17420 to ~16850
+approx 574.5 ev, from ~17426 to ~16850
 """
 
 #%%
@@ -38,6 +38,10 @@ from scipy.constants import h,c,m_e,eV, physical_constants
 from scipy.signal import find_peaks
 from scipy.stats import linregress
 import pandas as pd
+from uncertainties import ufloat
+from uncertainties import unumpy as unp
+from uncertainties.unumpy import nominal_values as noms
+from uncertainties.unumpy import std_devs as devs
 r_e = physical_constants['classical electron radius'][0]
 
 #%% Theory
@@ -126,21 +130,21 @@ e = get_e(a,b)
 
 #%%
 
-chnls = hist_peaks('D:/itai/data/Mo', height=10, prominence=10)
+chnls = hist_peaks('data/Mo', height=10, prominence=10)
 
 
 #%%
 
-chnls = hist_peaks('D:/itai/data/Descloizite', height=5, prominence=10)
+chnls = hist_peaks('data/Descloizite', height=5, prominence=10)
 
 #%%
 chan=np.array([2027, 2294, 955, 1179, 1435])
 energies=np.array([17420, 19608, (8638.86 + 8615.78)/2, (10551.5 + 10449.5)/2, (12613.7 + 12622.6)/2])
 
 reg=linregress(chan,energies)
-xchan=np.arange(1,2500)
+xchan=np.arange(750,2500)
 plt.figure(dpi=300)
-plt.plot(chan ,energies,'.', label='Lines')
+plt.errorbar(chan ,energies,0,0,fmt='.', label='Lines')
 plt.plot(xchan, reg.slope*xchan + reg.intercept, '--', label='Fit')
 plt.grid()
 plt.ylabel('Energy [eV]')
@@ -148,8 +152,8 @@ plt.xlabel('Channels')
 plt.legend()
 plt.show()
 
-a = reg.slope
-b = reg.intercept
+a = ufloat(reg.slope, reg.stderr)
+b = ufloat(reg.intercept, reg.intercept_stderr)
 
 #%%
 def conv(channel):
@@ -168,6 +172,10 @@ import scipy.constants as const # physical constants.
 #Define the Gaussian function
 def Gauss(x, H, A, x0, sigma):
     return H + A * np.exp(-(x - x0) ** 2 / (2 * sigma ** 2))
+
+#Define the Gaussian function
+def uGauss(x, H, A, x0, sigma):
+    return H + A * unp.exp(-(x - x0) ** 2 / (2 * sigma ** 2))
 
 # Mean over near chanels.
 def smooth(y, box_pts):
@@ -189,12 +197,12 @@ def comp(theo_angles):
     h=6.626*10**-34 # eV*s
     c=2.9*10**8; # m/s
     me=9.1*10**-31; # kg
-    return h/(me*c)*(1-np.cos(theo_angles))+e2lam(17479)
+    return h/(me*c)*(1-np.cos(theo_angles))+e2lam(17426)
 
-# The Klein-Nishina formula to energy 17479 eV
+# The Klein-Nishina formula to energy 17426 eV
 def klein_nish(A,theo_angles):
-    E0=17479 # eV . The line energy without the Plexiglas
-    lam0=e2lam(E0);
+    E0=17426 # eV . The line energy without the Plexiglas
+    lam0=e2lam(E0)
     return 1/2*A**2*(lam0/comp(theo_angles))**2*(lam0/comp(theo_angles)+comp(theo_angles)/lam0-np.sin(theo_angles)**2)
 
 # Define the line energy and amplitudes
@@ -207,17 +215,17 @@ colors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple',
 plt.figure(dpi=300)
 for i in range(1,15):
     # import the data 
-    data=pd.read_csv('D:/itai/data/run{}'.format(i), sep='\t', header=1)
+    data=pd.read_csv('data/run{}'.format(i), sep='\t', header=1)
     chanals=np.array(data['Channel/#'])
     Impulses=np.array(data['Impulses/#'])
     Imp_smooth=smooth(Impulses,50)
     
     # cut relevant interval
-    x=conv(chanals);
-    y=Imp_smooth;
+    x=noms(conv(chanals))
+    y=Imp_smooth
     indss = (x>16000) & (x<18500)
-    x=x[indss];
-    y=y[indss];
+    x=x[indss]
+    y=y[indss]
     
     # plot the relevant interval
     plt.plot(x,y,':',color=colors[i-1], label=f'Run {i}')
@@ -227,13 +235,14 @@ for i in range(1,15):
     plt.plot(x[peaks], y[peaks], "rx") # plot the estimation 
  
     # Fit the line to gaussian. p0 is the initial guess 
-    parameters, covariance = curve_fit(Gauss, x, y,p0=[10,y[peaks].item(),x[peaks].item(), 500]);
- 
-    plt.plot(x,Gauss(x,parameters[0],parameters[1],parameters[2],parameters[3]),'--',color=colors[i-1])
-     
+    parameters, covariance = curve_fit(Gauss, x, y,p0=[10,y[peaks].item(),x[peaks].item(), 500])
+    parameters_errs = np.sqrt(np.diag(covariance))
+    uparams = unp.uarray(parameters, parameters_errs)
+
+    plt.plot(x,noms(uGauss(x,uparams[0],uparams[1],uparams[2],uparams[3])),'--',color=colors[i-1])
     #acumulate the line energies and amplitudes
-    comp_amp.append(Gauss(parameters[2],parameters[0],parameters[1],parameters[2],parameters[3]))
-    comp_eng.append(parameters[2]) # e
+    comp_amp.append(uGauss(uparams[2],uparams[0],uparams[1],uparams[2],uparams[3]))
+    comp_eng.append(uparams[2]) # e
 
 plt.xlabel(r'Energy [eV]')
 plt.ylabel(r'Intensity [au]')
@@ -250,26 +259,74 @@ lmbda = e2lam(comp_eng)
 
 x =(1-np.cos(np.deg2rad(angles)))[:len(lmbda)]
 y = lmbda
-reg = linregress(x, y)
+reg = linregress(x, noms(y))
 
 plt.figure(dpi=120)
-plt.plot(x, y, '.', label='data')
+plt.errorbar(x, noms(y), devs(y), 0, fmt='.', label='data')
 plt.plot(x, reg.slope*x+reg.intercept, '--', label='fit')
 plt.xlabel(r'$1-\cos\left(\theta\right)$')
-plt.ylabel(r"$\lambda'$")
+plt.ylabel(r"$\lambda'$ $\left[m\right]$")
+plt.legend()
 plt.grid()
 plt.show()
 
 h=6.626*10**-34 # eV*s
 c=2.9*10**8; # m/s
-m_e = 1/reg.slope * (h/c)
+m_e = 1/ufloat(reg.slope, reg.stderr) * (h/c)
 
 #%%
 smooth_angles = np.linspace(0, 180, 100)
-A=11;
+A=11
 plt.figure(dpi=120)
-plt.plot(smooth_angles, klein_nish(A, np.deg2rad(smooth_angles)), label='Klein-Nishina')
-plt.plot(angles, comp_amp, '.', label='Data')
+plt.plot(smooth_angles, klein_nish(A, np.deg2rad(smooth_angles))-32, label='Klein-Nishina')
+plt.errorbar(angles, noms(comp_amp), devs(comp_amp), 0, fmt='.', label='Data')
+plt.xlabel(r'$\theta$ $\left[Degree\right]$')
+plt.ylabel(r'$\frac{d\sigma}{d\Omega}$')
 plt.legend()
 plt.grid()
 plt.show()
+
+#%%
+def fit_klein_nish(theta, A):
+    return klein_nish(A, theta)
+
+res = curve_fit(fit_klein_nish, np.deg2rad(noms(angles)), noms(comp_amp))
+print(f"A: {ufloat(res[0],np.sqrt(res[1][0]))}")
+plt.plot(smooth_angles, klein_nish(res[0], np.deg2rad(smooth_angles)), '--')
+plt.plot(noms(angles), noms(comp_amp), '.')
+plt.grid()
+
+# %%
+
+chnls = hist_peaks('data/run5', height=5, prominence=10)
+
+# %%
+
+i=8
+data=pd.read_csv('data/run{}'.format(i), sep='\t', header=1)
+chanals=np.array(data['Channel/#'])
+Impulses=np.array(data['Impulses/#'])
+Imp_smooth=smooth(Impulses,10)
+
+# cut relevant interval
+x=noms(conv(chanals))
+y=Imp_smooth
+indss = (x>16000) & (x<18500)
+x=x[indss]
+y=y[indss]
+
+plt.figure(dpi=150)
+# plot the relevant interval
+plt.plot(x,y,':', label=f'Run {i}')
+
+# first estimate the line energy
+peaks, properties = find_peaks(y, prominence=5, width=20,distance=1000)
+plt.plot(x[peaks], y[peaks], "rx") # plot the estimation 
+
+# Fit the line to gaussian. p0 is the initial guess 
+parameters, covariance = curve_fit(Gauss, x, y,p0=[10,y[peaks].item(),x[peaks].item(), 500])
+parameters_errs = np.sqrt(np.diag(covariance))
+uparams = unp.uarray(parameters, parameters_errs)
+
+# plt.plot(x,noms(uGauss(x,uparams[0],uparams[1],uparams[2],uparams[3])),'--')
+print(uparams)
